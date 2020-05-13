@@ -1,20 +1,37 @@
 version: '3'
 
 services:
-  api:
-    image: api_local
+  web:
     restart: always
+    build: ./flask-project
     ports:
-      - "5000:5000"
+      - '8000:8000'
+    links:
+      - postgres:postgres
+    volumes:
+      - web-data:/usr/src/app/static
+    env_file: 
+      - .env
+    command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
 
-  db:
-    image: postgres:9.6-alpine
+
+  data:
+    image: postgres:latest
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    command: "true"
+
+  postgres:
     restart: always
+    environment:
+      POSTGRES_DB: "db"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    image: postgres:latest
+    volumes:
+      - db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    environment:
-#      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456789
-    volumes:
-    - ./data:/var/lib/postgresql/data
 
+volumes:
+  db-data:
+  web-data:
