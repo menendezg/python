@@ -11,11 +11,15 @@ class State(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.Integer)
     name = db.Column(db.String)
-    user = db.relationship("User", uselist=False, backref="state")
+    users = db.relationship("User", backref="location")
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime)
 
     def __init__(self, code, name):
+        self.code = code
+        self.name = name
+
+    def update(self, code, name):
         self.code = code
         self.name = name
 
@@ -33,9 +37,14 @@ class State(db.Model):
         return self
 
     @classmethod
-    def find_by_username(cls, name):
-        return cls.query.filter_by(name=name).first()
+    def find_by_id(cls, _id):
+        return cls.query.filter_by(id=_id).first()
 
     @classmethod
-    def find_by_id(cls, id):
-        return cls.query.filter_by(id=id).first()
+    def get_all(cls):
+        return cls.query.all()
+
+    @classmethod
+    def delete_by_id(cls, _id):
+        cls.query.filter_by(id=_id).delete()
+        db.session.commit()
